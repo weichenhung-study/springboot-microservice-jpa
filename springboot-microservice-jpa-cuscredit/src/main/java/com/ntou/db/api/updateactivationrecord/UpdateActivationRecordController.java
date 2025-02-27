@@ -1,6 +1,5 @@
 package com.ntou.db.api.updateactivationrecord;
 
-import com.ntou.db.api.findbycidandcardtype.GetCardHolderRes;
 import com.ntou.db.cuscredit.CuscreditSvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

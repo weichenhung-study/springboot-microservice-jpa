@@ -10,7 +10,7 @@
 	
     <artifactId>springboot-microservice-jpa-cuscredit</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <!--<packaging>war</packaging>-->
+    <packaging>jar</packaging>
     <name>springboot-microservice-jpa-cuscredit</name>
 
     <properties>
@@ -29,5 +29,19 @@
 	
     <build>
         <finalName>springboot-microservice-jpa-cuscredit</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
