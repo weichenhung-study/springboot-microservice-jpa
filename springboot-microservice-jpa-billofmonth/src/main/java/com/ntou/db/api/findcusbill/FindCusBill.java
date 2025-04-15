@@ -5,6 +5,7 @@ import com.ntou.db.billofmonth.BillofmonthSvc;
 import static com.ntou.db.api.findcusbill.FindCusBillRC.*;
 
 import com.ntou.tool.Common;
+import com.ntou.tool.ExecutionTimer;
 import com.ntou.tool.DateTool;
 import com.ntou.tool.ResTool;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +19,9 @@ import java.util.List;
 @Log4j2
 public class FindCusBill {
     public ResponseEntity<FindCusBillRes> doAPI(FindCusBillReq req, BillofmonthSvc billofmonthSvc) throws Exception {
-        log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
+        ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+
+		log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
         log.info(Common.REQ + req);
         FindCusBillRes res = new FindCusBillRes();
 
@@ -26,9 +29,12 @@ public class FindCusBill {
             ResTool.regularThrow(res, VALIDATION_ERROR.getCode(), VALIDATION_ERROR.getContent(), req.getErrMsg());
 
         Billofmonth vo = setUpdatePayDate(req);
+		
+		ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
         List<Billofmonth> listBillofmonth = billofmonthSvc.findBills(vo);
         if(listBillofmonth.isEmpty())
             ResTool.commonThrow(res, NODATA.getCode(), NODATA.getContent());
+		ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
 
         res.setResult(listBillofmonth);
 
@@ -36,7 +42,10 @@ public class FindCusBill {
 
         log.info(Common.RES + res);
         log.info(Common.API_DIVIDER + Common.END_B + Common.API_DIVIDER);
-        return ResponseEntity.status(HttpStatus.OK).body(res);
+        
+		ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+        ExecutionTimer.exportTimings(this.getClass().getSimpleName() + "_" + DateTool.getYYYYmmDDhhMMss() + ".txt");
+		return ResponseEntity.status(HttpStatus.OK).body(res);
     }
     private Billofmonth setUpdatePayDate(FindCusBillReq req){
         Billofmonth vo = new Billofmonth();

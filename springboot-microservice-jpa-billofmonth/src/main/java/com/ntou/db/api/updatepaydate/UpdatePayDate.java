@@ -3,6 +3,7 @@ package com.ntou.db.api.updatepaydate;
 import com.ntou.db.billofmonth.Billofmonth;
 import com.ntou.db.billofmonth.BillofmonthSvc;
 import com.ntou.tool.Common;
+import com.ntou.tool.ExecutionTimer;
 import com.ntou.tool.DateTool;
 import com.ntou.tool.ResTool;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +17,9 @@ import static com.ntou.db.api.insertbill.InsertBillRC.*;
 @Log4j2
 public class UpdatePayDate {
     public ResponseEntity<UpdatePayDateRes> doAPI(UpdatePayDateReq req, BillofmonthSvc billofmonthSvc) throws Exception {
-        log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
+        ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+		
+		log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
         log.info(Common.REQ + req);
         UpdatePayDateRes res = new UpdatePayDateRes();
 
@@ -24,15 +27,22 @@ public class UpdatePayDate {
             ResTool.regularThrow(res, VALIDATION_ERROR.getCode(), VALIDATION_ERROR.getContent(), req.getErrMsg());
 
         Billofmonth vo = setUpdatePayDate(req);
+		
+		ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
         Billofmonth updateCount = billofmonthSvc.updatePaid(vo);
-        if(updateCount == null)
+        ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
+
+		if(updateCount == null)
             ResTool.commonThrow(res, FAIL.getCode(), FAIL.getContent());
 
         ResTool.setRes(res, SUCCESS.getCode(), SUCCESS.getContent());
 
         log.info(Common.RES + res);
         log.info(Common.API_DIVIDER + Common.END_B + Common.API_DIVIDER);
-        return ResponseEntity.status(HttpStatus.OK).body(res);
+        
+		ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+        ExecutionTimer.exportTimings(this.getClass().getSimpleName() + "_" + DateTool.getYYYYmmDDhhMMss() + ".txt");
+		return ResponseEntity.status(HttpStatus.OK).body(res);
     }
     private Billofmonth setUpdatePayDate(UpdatePayDateReq req){
         Billofmonth vo = new Billofmonth();

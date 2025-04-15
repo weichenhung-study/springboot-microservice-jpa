@@ -3,6 +3,7 @@ package com.ntou.db.api.insertbill;
 import com.ntou.db.billofmonth.Billofmonth;
 import com.ntou.db.billofmonth.BillofmonthSvc;
 import com.ntou.tool.Common;
+import com.ntou.tool.ExecutionTimer;
 import com.ntou.tool.DateTool;
 import com.ntou.tool.ResTool;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +19,9 @@ import static com.ntou.db.api.insertbill.InsertBillRC.*;
 @Log4j2
 public class InsertBill {
     public ResponseEntity<InsertBillRes> doAPI(InsertBillReq req, BillofmonthSvc billofmonthSvc) throws Exception {
-        log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
+        ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+
+		log.info(Common.API_DIVIDER + Common.START_B + Common.API_DIVIDER);
         log.info(Common.REQ + req);
         InsertBillRes res = new InsertBillRes();
 
@@ -28,12 +31,19 @@ public class InsertBill {
 //        int bInsertCusDateBill = billofmonthSvc.saveBillofmonth(setBillofmonthVO(req));
 //        if(bInsertCusDateBill !=1)
 //            ResTool.commonThrow(res, FAIL.getCode(), FAIL.getContent());
-        billofmonthSvc.saveBillofmonth(setBillofmonthVO(req));
-        ResTool.setRes(res, SUCCESS.getCode(), SUCCESS.getContent());
+
+		ExecutionTimer.startStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
+		billofmonthSvc.saveBillofmonth(setBillofmonthVO(req));
+        ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.DATABASE.getValue());
+
+		ResTool.setRes(res, SUCCESS.getCode(), SUCCESS.getContent());
 
         log.info(Common.RES + res);
         log.info(Common.API_DIVIDER + Common.END_B + Common.API_DIVIDER);
-        return ResponseEntity.status(HttpStatus.OK).body(res);
+        
+		ExecutionTimer.endStage(ExecutionTimer.ExecutionModule.APPLICATION.getValue());
+        ExecutionTimer.exportTimings(this.getClass().getSimpleName() + "_" + DateTool.getYYYYmmDDhhMMss() + ".txt");
+		return ResponseEntity.status(HttpStatus.OK).body(res);
     }
     private Billofmonth setBillofmonthVO(InsertBillReq req){
         Billofmonth vo = new Billofmonth();
